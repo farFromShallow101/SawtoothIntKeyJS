@@ -1,4 +1,3 @@
-
 //Creating private key
 const {createContext, CryptoFactory} = require('sawtooth-sdk/signing')
 
@@ -46,15 +45,23 @@ console.log("payload Bytes-",payloadBytes)
 
 const {createHash} = require('crypto')
 const {protobuf} = require('sawtooth-sdk')
+//Will create the get_address function here
+
+/*
+function get_address() {
+    let prefix = createHash('sha512').update(FAMILY_NAME)[0..6];    // dekh lena js me kaise karte hai ye
+    let name_address = //same way
+    return prefix + name // thik h
+}*/
 
 const transactionHeaderBytes = protobuf.TransactionHeader.encode({
     batcherPublicKey: signer.getPublicKey().asHex(),
     dependencies: [],
-    familyName: 'transfer-chain',
+    familyName: 'intkey',
     familyVersion: '1.0',
-    inputs: [],
+    inputs: [get_address(payload["Name"])],
     nonce:getNonce(),
-    outputs: [],
+    outputs: [get_address(payload["Name"])],
     payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
     signerPublicKey: signer.getPublicKey().asHex()
     // In this example, we're signing the batch with the same private key,
@@ -86,7 +93,7 @@ const batchHeaderBytes = protobuf.BatchHeader.encode({
 
 console.log("batch header bytes- ",batchHeaderBytes);
 
-
+// nahi abhi nhi karega
 const batchSignature = signer.sign(batchHeaderBytes)
 
 const batch = protobuf.Batch.create({

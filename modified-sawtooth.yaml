@@ -63,7 +63,7 @@ services:
       - "8008:8008"
     depends_on:
       - validator
-    entrypoint: sawtooth-rest-api -C tcp://validator:4004 --bind rest-api:8008
+    entrypoint: sawtooth-rest-api -vvv -C tcp://validator:4004 --bind rest-api:8008 # bas verbose karne ke liye, taki jab POST request bhejenge to print karega, kamsekam itna sure hu ki client send kar raha hai request
 
   shell:
     image: hyperledger/sawtooth-shell:chime

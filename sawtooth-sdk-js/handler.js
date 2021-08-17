@@ -118,6 +118,7 @@ class IntegerKeyHandler extends TransactionHandler {
   }
 
   apply (transactionProcessRequest, context) {
+    console.log("Received payload");  // agar yaaha reach nhi kar rha to validator pe hi ruk gya request mtlb, kyunki req send to hua client se, lekin yaha nhi aaya
     return _decodeCbor(transactionProcessRequest.payload)
       .catch(_toInternalError)
       .then((update) => {
