@@ -59,7 +59,7 @@ const transactionHeaderBytes = protobuf.TransactionHeader.encode({
     dependencies: [],
     familyName: 'intkey',
     familyVersion: '1.0',
-    inputs: [get_address(payload["Name"])],
+    inputs: [get_address(payload["Name"])], //won't use the get_address function, will try with createHash first. Update: That didn't work. Gave "Exception creating context"
     nonce:getNonce(),
     outputs: [get_address(payload["Name"])],
     payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
@@ -93,7 +93,6 @@ const batchHeaderBytes = protobuf.BatchHeader.encode({
 
 console.log("batch header bytes- ",batchHeaderBytes);
 
-// nahi abhi nhi karega
 const batchSignature = signer.sign(batchHeaderBytes)
 
 const batch = protobuf.Batch.create({
