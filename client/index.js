@@ -47,12 +47,11 @@ const {createHash} = require('crypto')
 const {protobuf} = require('sawtooth-sdk')
 //Will create the get_address function here
 
-/*
-function get_address() {
-    let prefix = createHash('sha512').update(FAMILY_NAME)[0..6];    // dekh lena js me kaise karte hai ye
-    let name_address = //same way
-    return prefix + name // thik h
-}*/
+function get_address(name) {
+    let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);    // dekh lena js me kaise karte hai ye
+    let name_address = createHash('sha512').update(name).digest('hex').toLowerCase().slice(-64);
+    return prefix + name_address // thik h
+}
 
 const transactionHeaderBytes = protobuf.TransactionHeader.encode({
     batcherPublicKey: signer.getPublicKey().asHex(),
@@ -69,7 +68,7 @@ const transactionHeaderBytes = protobuf.TransactionHeader.encode({
     // public key will need to be associated with that key.
 }).finish()
 
-console.log("Transaction header- ",transactionHeaderBytes)
+console.log("Transaction header- ",get_address(payload["Name"]))
 
 
 

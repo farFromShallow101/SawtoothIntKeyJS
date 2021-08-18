@@ -168,6 +168,7 @@ class IntegerKeyHandler extends TransactionHandler {
         }
 
         let address = INT_KEY_NAMESPACE + _hash(name).slice(-64)
+        console.log("Address should be : ", address);
 
         // Get the current state, for the key's address:
         let getPromise = context.getState([address])
