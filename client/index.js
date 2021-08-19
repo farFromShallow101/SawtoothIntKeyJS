@@ -45,10 +45,9 @@ console.log("payload Bytes-",payloadBytes)
 
 const {createHash} = require('crypto')
 const {protobuf} = require('sawtooth-sdk')
-//Will create the get_address function here
 
 function get_address(name) {
-    let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);    // dekh lena js me kaise karte hai ye
+    let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);
     let name_address = createHash('sha512').update(name).digest('hex').toLowerCase().slice(-64);
     return prefix + name_address // thik h
 }
@@ -58,14 +57,11 @@ const transactionHeaderBytes = protobuf.TransactionHeader.encode({
     dependencies: [],
     familyName: 'intkey',
     familyVersion: '1.0',
-    inputs: [get_address(payload["Name"])], //won't use the get_address function, will try with createHash first. Update: That didn't work. Gave "Exception creating context"
+    inputs: [get_address(payload["Name"])], 
     nonce:getNonce(),
     outputs: [get_address(payload["Name"])],
     payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
     signerPublicKey: signer.getPublicKey().asHex()
-    // In this example, we're signing the batch with the same private key,
-    // but the batch can be signed by another party, in which case, the
-    // public key will need to be associated with that key.
 }).finish()
 
 console.log("Transaction header- ",get_address(payload["Name"]))
@@ -101,9 +97,66 @@ const batch = protobuf.Batch.create({
     trace:true
     
 });
+//Will try to create another batch
 
+const payload1 = {
+    Verb: 'set',
+    Name: 'Aditya',
+    Value: 25
+}
+
+const payloadBytes1 = cbor.encode(payload1)
+
+console.log("payload Bytes-",payloadBytes1)
+
+const transactionHeaderBytes1 = protobuf.TransactionHeader.encode({
+    batcherPublicKey: signer.getPublicKey().asHex(),
+    dependencies: [],
+    familyName: 'intkey',
+    familyVersion: '1.0',
+    inputs: [get_address(payload1["Name"])], 
+    nonce:getNonce(),
+    outputs: [get_address(payload1["Name"])],
+    payloadSha512: createHash('sha512').update(payloadBytes1).digest('hex'),
+    signerPublicKey: signer.getPublicKey().asHex()
+}).finish()
+
+console.log("Transaction header- ",get_address(payload1["Name"]))
+
+
+
+const signature1 = signer.sign(transactionHeaderBytes1)
+
+const transaction1 = protobuf.Transaction.create({
+    header: transactionHeaderBytes1,
+    headerSignature: signature1,
+    payload: payloadBytes1
+})
+
+
+console.log("Transaction- ",transaction1);
+
+const transactions1 = [transaction1]
+
+const batchHeaderBytes1 = protobuf.BatchHeader.encode({
+    signerPublicKey: signer.getPublicKey().asHex(),
+    transactionIds: transactions1.map((txn) => txn.headerSignature),
+}).finish()
+
+console.log("batch header bytes- ",batchHeaderBytes1);
+
+const batchSignature1 = signer.sign(batchHeaderBytes1)
+
+const batch1 = protobuf.Batch.create({
+    header: batchHeaderBytes1,
+    headerSignature: batchSignature1,
+    transactions: transactions1,
+    trace:true
+    
+});
+/////////
 const batchListBytes = protobuf.BatchList.encode({
-    batches: [batch]
+    batches: [batch, batch1]       
 }).finish()
 
 console.log("BatchListAsbytes- ",batchListBytes)
