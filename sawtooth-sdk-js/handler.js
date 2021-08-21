@@ -163,11 +163,11 @@ class IntegerKeyHandler extends TransactionHandler {
           actionFn = _applyDec
         } else if (verb === 'inc') {
           actionFn = _applyInc
-        } else if (verb === 'transfer') {
+        } /*else if (verb === 'transfer') {
           //actionFn = _applyTransfer
           actionFn = _applyDec;
           actionFn2 = _applyInc;
-        } else {
+        } */else {
           throw new InvalidTransaction(`Verb must be set, inc, dec not ${verb}`)
         }
 
@@ -177,24 +177,15 @@ class IntegerKeyHandler extends TransactionHandler {
         // Get the current state, for the key's address:
         let getPromise = context.getState([address])
 
-        // Apply the action to the promise's result:
-        /*if ( verb === "transfer" ) {
-          let actionPromise = getPromise.then(
-            _applyTransfer(context, address, name, Update.Receiver, value)
-          )
-        } else {
-          let actionPromise = getPromise.then(
-            actionFn(context, address, name, value)
-          )
-        }*/
+      
         // Apply the action to the promise's result:
         let actionPromise = getPromise.then(
           actionFn(context, address, name, value)
         )
         // Apply the action to the promise's result:
-        let actionPromise2 = getPromise.then(
+        /*let actionPromise2 = getPromise.then(
           actionFn2(context, address, Update.Receiver, value)
-        )
+        )*/
         return actionPromise.then(addresses => {
           if (addresses.length === 0) {
             throw new InternalError('State Error!')
@@ -202,12 +193,12 @@ class IntegerKeyHandler extends TransactionHandler {
           console.log(`Verb: ${verb} Name: ${name} Value: ${value}`)
         })
         // Validate that the action promise results in the correctly set address:
-        return actionPromise2.then(addresses => {
+        /*return actionPromise2.then(addresses => {
           if (addresses.length === 0) {
             throw new InternalError('State Error!')
           }
           console.log(`Verb: ${verb} Name: ${Update.Receiver} Value: ${value}`)
-        })
+        })*/
       })
   }
 }

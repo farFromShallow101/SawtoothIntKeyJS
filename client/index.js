@@ -78,6 +78,66 @@ if ( Verb === "register" ) {
         Value: Value
     };
 }
+    const payloadBytes = cbor.encode(payload)
+
+    console.log("payload Bytes-",payloadBytes)
+    
+    
+    
+    const {createHash} = require('crypto')
+    const {protobuf} = require('sawtooth-sdk')
+    
+    function get_address(name) {
+        let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);
+        let name_address = createHash('sha512').update(name).digest('hex').toLowerCase().slice(-64);
+        return prefix + name_address // thik h
+    }
+    
+    const transactionHeaderBytes = protobuf.TransactionHeader.encode({
+        batcherPublicKey: signer.getPublicKey().asHex(),
+        dependencies: [],
+        familyName: 'intkey',
+        familyVersion: '1.0',
+        inputs: [get_address(payload["Name"])], 
+        nonce:getNonce(),
+        outputs: [get_address(payload["Name"])],
+        payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
+        signerPublicKey: signer.getPublicKey().asHex()
+    }).finish()
+    
+    console.log("Transaction header- ",get_address(payload["Name"]))
+    
+    
+    
+    const signature = signer.sign(transactionHeaderBytes)
+    
+    const transaction = protobuf.Transaction.create({
+        header: transactionHeaderBytes,
+        headerSignature: signature,
+        payload: payloadBytes
+    })
+    
+    
+    console.log("Transaction- ",transaction);
+    
+    const transactions = [transaction]
+    
+    const batchHeaderBytes = protobuf.BatchHeader.encode({
+        signerPublicKey: signer.getPublicKey().asHex(),
+        transactionIds: transactions.map((txn) => txn.headerSignature),
+    }).finish()
+    
+    console.log("batch header bytes- ",batchHeaderBytes);
+    
+    const batchSignature = signer.sign(batchHeaderBytes)
+    
+    const batch = protobuf.Batch.create({
+        header: batchHeaderBytes,
+        headerSignature: batchSignature,
+        transactions: transactions,
+        trace:true
+        
+    });
 
 
 /*const payload = {
@@ -86,7 +146,7 @@ if ( Verb === "register" ) {
     Value: 20
 }*/
 //const payloadBytes =Buffer.from(JSON.stringify(payload))
-const payloadBytes = cbor.encode(payload)
+/*const payloadBytes = cbor.encode(payload)
 
 console.log("payload Bytes-",payloadBytes)
 
@@ -145,7 +205,7 @@ const batch = protobuf.Batch.create({
     transactions: transactions,
     trace:true
     
-});
+});*/
 //Will try to create another batch
 
 /*const payload1 = {
@@ -204,6 +264,8 @@ const batch1 = protobuf.Batch.create({
     
 });*/
 /////////
+
+//Will change this for the transfer verb
 const batchListBytes = protobuf.BatchList.encode({
     batches: [batch]  // earlier I kept it as [batch, batch1] for the double testing     
 }).finish()
