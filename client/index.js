@@ -37,39 +37,39 @@ console.log("Value was: ", process.argv[4]);
 // client set arshad 15 
 const Verb = process.argv[2];
 const User = process.argv[3];
-let payload;
+var payload = {
+    Verb: "set",
+    Name: User,
+    Value: 0
+};
 if ( Verb === "register" ) {
     // client register arshad
-    payload = {
-        Verb: "set",
-        Name: User,
-        Value: 0
-    };
+    payload.verb = "set",
+    payload.Name = User,
+    payload.Value= 0
+    
 } else if ( Verb === "set" ) {
     // client set arshad 15
-    payload = {
-        Verb: "set",
-        Name: User,
-        Value: process.argv[4]
-    };
+    payload.verb = "set",
+    payload.Name = User,
+    payload.Value= parseInt(process.argv[4])
+    
 } else if ( Verb === "inc" ) {
     // client inc arshad 15
-    payload = {
-        Verb: "inc",
-        Name: User,
-        Value: process.argv[4]
-    };
+    payload.verb = "inc",
+    payload.Name = User,
+    payload.Value= parseInt(process.argv[4])
+
 } else if ( Verb === "dec" ) {
-    // client inc arshad 15
-    payload = {
-        Verb: "dec",
-        Name: User,
-        Value: process.argv[4]
-    };
+    // client inc arshad 15 
+    payload.verb = "dec",
+    payload.Name = User,
+    payload.Value= parseInt(process.argv[4])
+
 } else if ( Verb === "transfer" ) {
     // client transfer arshad utkarsh 15
-    const Receiver = process.argv[3];
-    const Value = process.argv[4];  // transfer amount
+    const Receiver = process.argv[4];
+    const Value = parseInt(process.argv[5])  // transfer amount
 
     payload = {
         Verb: "transfer",

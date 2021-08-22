@@ -146,6 +146,7 @@ class IntegerKeyHandler extends TransactionHandler {
         }
         console.log("Value in tp is -", value)
         let parsed = parseInt(value)
+        console.log("Parsed Value in tp is -", parsed)
         if (parsed !== value || parsed < MIN_VALUE || parsed > MAX_VALUE) {
           throw new InvalidTransaction(
             `Value must be an integer ` +
