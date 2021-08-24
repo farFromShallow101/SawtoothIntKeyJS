@@ -31,11 +31,58 @@ console.log("Second signature- ",signer1.sign("abcdefgh"))
 //Encoding of Payload
 const cbor = require('cbor')
 
-const payload = {
+const process = require("process");
+console.log("Command line arguments were: ", process.argv);
+console.log("Value was: ", process.argv[4]);
+// client set arshad 15 
+const Verb = process.argv[2];
+const User = process.argv[3];
+var payload = {
+    Verb: Verb,
+    Name: User,
+    Value: 0
+};
+if ( Verb === "register" ) {
+    // client register arshad
+    payload.verb = "set",
+    payload.Value= 0
+    
+} else if ( Verb === "set" ) {
+    // client set arshad 15
+    //payload.verb = "set",
+    payload.Value= parseInt(process.argv[4])
+    
+} else if ( Verb === "inc" ) {
+    // client inc arshad 15
+    //payload.verb = "inc",
+    payload.Value= parseInt(process.argv[4])
+
+} else if ( Verb === "dec" ) {
+    // client inc arshad 15 
+    //payload.verb = "dec",
+    payload.Value= parseInt(process.argv[4])
+
+} //will test transfer later
+/*else if ( Verb === "transfer" ) {
+    // client transfer arshad utkarsh 15
+    const Receiver = process.argv[4];
+    const Value = parseInt(process.argv[5])  // transfer amount
+
+    payload = {
+        Verb: "transfer",
+        Name: User,
+        Receiver: Receiver,
+        Value: Value
+    };
+}*/ else {
+    console.log("Invalid verb");
+}
+
+/*const payload = {
     Verb: 'set',
     Name: 'Arshad',
     Value: 20
-}
+}*/
 //const payloadBytes =Buffer.from(JSON.stringify(payload))
 const payloadBytes = cbor.encode(payload)
 
