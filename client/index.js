@@ -42,39 +42,35 @@ var payload = {
     Name: User,
     Value: 0
 };
+var payload1 = {
+    Verb: Verb,
+    Name: User,
+    Value: 0
+};
 if ( Verb === "register" ) {
-    // client register arshad
     payload.verb = "set",
     payload.Value= 0
     
 } else if ( Verb === "set" ) {
-    // client set arshad 15
-    //payload.verb = "set",
     payload.Value= parseInt(process.argv[4])
     
 } else if ( Verb === "inc" ) {
-    // client inc arshad 15
-    //payload.verb = "inc",
     payload.Value= parseInt(process.argv[4])
 
 } else if ( Verb === "dec" ) {
-    // client inc arshad 15 
-    //payload.verb = "dec",
     payload.Value= parseInt(process.argv[4])
 
-} //will test transfer later
-/*else if ( Verb === "transfer" ) {
+} //will test transfer later. UPDATE: THAT LATER IS NOW
+else if ( Verb === "transfer" ) {
     // client transfer arshad utkarsh 15
     const Receiver = process.argv[4];
-    const Value = parseInt(process.argv[5])  // transfer amount
-
-    payload = {
-        Verb: "transfer",
-        Name: User,
-        Receiver: Receiver,
-        Value: Value
-    };
-}*/ else {
+    const Value = parseInt(process.argv[5]);  // transfer amount
+    payload.Verb = "dec";
+    payload.Value = Value;
+    payload1.Name = Receiver;
+    payload1.Verb = "inc";
+    payload1.Value = Value;
+}else {
     console.log("Invalid verb");
 }
 
@@ -84,76 +80,97 @@ if ( Verb === "register" ) {
     Value: 20
 }*/
 //const payloadBytes =Buffer.from(JSON.stringify(payload))
-const payloadBytes = cbor.encode(payload)
-
-console.log("payload Bytes-",payloadBytes)
-
-
-
 const {createHash} = require('crypto')
 const {protobuf} = require('sawtooth-sdk')
-//Will create the get_address function here
 
-function get_address(name) {
-    let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);    // dekh lena js me kaise karte hai ye
-    let name_address = createHash('sha512').update(name).digest('hex').toLowerCase().slice(-64);
-    return prefix + name_address // thik h
+// *****************PROCESS PAYLOAD MUL FUNCTION EITU****************************
+
+function processPayload(payload){
+
+    const payloadBytes = cbor.encode(payload)
+
+    console.log("payload Bytes-",payloadBytes)
+
+
+
+
+    //Will create the get_address function here
+
+    function get_address(name) {
+        let prefix = createHash('sha512').update("intkey").digest('hex').toLowerCase().substring(0, 6);    // dekh lena js me kaise karte hai ye
+        let name_address = createHash('sha512').update(name).digest('hex').toLowerCase().slice(-64);
+        return prefix + name_address // thik h
+    }
+
+    const transactionHeaderBytes = protobuf.TransactionHeader.encode({
+        batcherPublicKey: signer.getPublicKey().asHex(),
+        dependencies: [],
+        familyName: 'intkey',
+        familyVersion: '1.0',
+        inputs: [get_address(payload["Name"])], //won't use the get_address function, will try with createHash first. Update: That didn't work. Gave "Exception creating context"
+        nonce:getNonce(),
+        outputs: [get_address(payload["Name"])],
+        payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
+        signerPublicKey: signer.getPublicKey().asHex()
+        // In this example, we're signing the batch with the same private key,
+        // but the batch can be signed by another party, in which case, the
+        // public key will need to be associated with that key.
+    }).finish()
+
+    console.log("Transaction header- ",get_address(payload["Name"]))
+
+
+
+    const signature = signer.sign(transactionHeaderBytes)
+
+    const transaction = protobuf.Transaction.create({
+        header: transactionHeaderBytes,
+        headerSignature: signature,
+        payload: payloadBytes
+    })
+
+    console.log("Transaction- ",transaction);
+
+    const transactions = [transaction]
+
+    const batchHeaderBytes = protobuf.BatchHeader.encode({
+        signerPublicKey: signer.getPublicKey().asHex(),
+        transactionIds: transactions.map((txn) => txn.headerSignature),
+    }).finish()
+
+    console.log("batch header bytes- ",batchHeaderBytes);
+
+    const batchSignature = signer.sign(batchHeaderBytes)
+
+    return protobuf.Batch.create({   //eyat assign korar thait return korim
+        header: batchHeaderBytes,
+        headerSignature: batchSignature,
+        transactions: transactions,
+        trace:true
+        
+    });
+}
+//now, I'll give this statement in the if else ladder itself. UPDATE: Naah kaam nookorile
+const batch0 = processPayload(payload);
+
+//will test transfer later. Update: that later is now
+var batchListBytes;
+if(Verb==="transfer")
+{
+    const batch1 = processPayload(payload1);
+
+    batchListBytes = protobuf.BatchList.encode({
+        batches: [batch0, batch1]
+    }).finish()
+    console.log("BatchListAsbytes- ",batchListBytes)
+}
+else{
+    batchListBytes = protobuf.BatchList.encode({
+        batches: [batch0]
+    }).finish()
+    console.log("BatchListAsbytes- ",batchListBytes)
 }
 
-const transactionHeaderBytes = protobuf.TransactionHeader.encode({
-    batcherPublicKey: signer.getPublicKey().asHex(),
-    dependencies: [],
-    familyName: 'intkey',
-    familyVersion: '1.0',
-    inputs: [get_address(payload["Name"])], //won't use the get_address function, will try with createHash first. Update: That didn't work. Gave "Exception creating context"
-    nonce:getNonce(),
-    outputs: [get_address(payload["Name"])],
-    payloadSha512: createHash('sha512').update(payloadBytes).digest('hex'),
-    signerPublicKey: signer.getPublicKey().asHex()
-    // In this example, we're signing the batch with the same private key,
-    // but the batch can be signed by another party, in which case, the
-    // public key will need to be associated with that key.
-}).finish()
-
-console.log("Transaction header- ",get_address(payload["Name"]))
-
-
-
-const signature = signer.sign(transactionHeaderBytes)
-
-const transaction = protobuf.Transaction.create({
-    header: transactionHeaderBytes,
-    headerSignature: signature,
-    payload: payloadBytes
-})
-
-
-console.log("Transaction- ",transaction);
-
-const transactions = [transaction]
-
-const batchHeaderBytes = protobuf.BatchHeader.encode({
-    signerPublicKey: signer.getPublicKey().asHex(),
-    transactionIds: transactions.map((txn) => txn.headerSignature),
-}).finish()
-
-console.log("batch header bytes- ",batchHeaderBytes);
-
-const batchSignature = signer.sign(batchHeaderBytes)
-
-const batch = protobuf.Batch.create({
-    header: batchHeaderBytes,
-    headerSignature: batchSignature,
-    transactions: transactions,
-    trace:true
-    
-});
-
-const batchListBytes = protobuf.BatchList.encode({
-    batches: [batch]
-}).finish()
-
-console.log("BatchListAsbytes- ",batchListBytes)
 
 const request = require('request')
 
