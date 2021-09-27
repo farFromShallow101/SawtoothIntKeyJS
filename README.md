@@ -10,9 +10,9 @@
 4. On both the terminals: nvm use 12
 5. On the transaction processor side, run <br> npm install<br> After this, run the following:<br> npm run start tcp://localhost:4004
 6. On the client side, run the following:<br>npm install<br>node index.js set var1 25 --url http://rest-api:8008
-<br> to increment: node index.js inc var 5 --url http://rest-api:8008
-<br> to decrement: node index.js dec var 5 --url http://rest-api:8008
-<br> to transfer: node index.js transfer var var2 5 --url http://rest-api:8008
+<br> to increment: node index.js inc var1 5 --url http://rest-api:8008
+<br> to decrement: node index.js dec var1 5 --url http://rest-api:8008
+<br> to transfer: node index.js transfer var1 var2 5 --url http://rest-api:8008
 
 ### TO CHECK THE STATE DATA:
 From a new terminal, use this command: <br>
